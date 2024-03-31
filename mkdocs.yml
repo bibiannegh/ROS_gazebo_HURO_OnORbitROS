@@ -1,0 +1,42 @@
+site_name: OnOrbitROS Documentation
+
+theme: 
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+    - yaml
+    - rust
+  # features:
+  #   - content.code.copy
+
+repo_url: https://github.com/OnOrbitROS
+
+markdown_extensions:
+  - admonition
+  #- mdx_math
+  # - markdown_include.include:
+  #       base_path: docs
+  # - pymdownx.highlight:
+  #     anchor_linenums: true
+  #     line_spans: __span
+  #     pygments_lang_class: true
+  # - pymdownx.inlinehilite
+  # - pymdownx.snippets
+  # - pymdownx.superfences
+
+
+extra_css: [extra.css]
+extra_javascript: [extra.js]
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
+nav:
+  - Home:
+    - Welcome to OnOrbitROS: index.md
+    - HURO Space Robotics: huro.html
+  - User Guide:
+    - Installation Guide: Install.md
+    - Examples of Aplications: examples.md
+  - Developer Guide: 
+    - Architechture: architechture.md
+    - Create a new Application: application.md
