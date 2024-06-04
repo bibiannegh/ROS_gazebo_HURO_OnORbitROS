@@ -1,6 +1,6 @@
 # Installation Guide
 
-OnOrbitROS framework can be found on [this](https://github.com/OnOrbitROS) GitHub. There you will find the packages to install in your ROS environment as well as different guided examples to discover the functionalities OnOrbitROS offers. With this framework it is also possible to create new projects from the existing ones or from scrath.
+OnOrbitROS framework can be found on [this](https://github.com/OnOrbitROS) GitHub; the main application is **Simulation**. There you will find the packages to install in your ROS environment as well as different guided examples to discover the functionalities OnOrbitROS offers. With this framework it is also possible to create new projects from the existing ones or from scrath.
 
 ---
 
@@ -36,7 +36,7 @@ In case you would like to install the example cases:
 
 1. Download the example you want with `git clone` or manually into the folder `orbit_ws/src`.
 2. Build the environment with `catkin_make` or `catkin_make_isolated`.
-3. Execute the `.launch` corresponding to that example. See the specific example documentation for that (found in [Examples of Applications](/examples))
+3. Execute the `.launch` corresponding to that example. See the specific example documentation for that (found in [Examples of Applications](examples.md))
 
 ---
 
@@ -49,3 +49,5 @@ Packages for the controllers:
 - [Joint State Controller](https://wiki.ros.org/joint_state_controller):    `$ sudo apt-get install ros-noetic-joint-state-controller`
 - [Effort Controller](https://wiki.ros.org/effort_controllers): `$ sudo apt-get install ros-noetic-effort-controller`
 - [Position Controllers](https://wiki.ros.org/position_controllers):    `$ sudo apt-get install ros-noetic-position-controllers`  
+
+

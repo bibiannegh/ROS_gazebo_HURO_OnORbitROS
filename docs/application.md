@@ -4,7 +4,7 @@ Guide to help you create a new project using OnOrbitROS framework.
 
 ## Create the new project
 
-Download the framework following the [Installation Guide](/Install). It is recommended that the new projects are located under `> orbit_ws > src` as occur with the examples. After installation you will find a package template, `application_template`, and inside you will find the configuration, launch, messages, source code, urdf and worlds folders, as well as the prepared CMakeLists file and others needed to use the framework. You can then add the files corresponding to your specific needs. 
+Download the framework following the [Installation Guide](Install.md). It is recommended that the new projects are located under `> orbit_ws > src` as occur with the examples. After installation you will find a package template, `application_template`, and inside you will find the configuration, launch, messages, source code, urdf and worlds folders, as well as the prepared CMakeLists file and others needed to use the framework. You can then add the files corresponding to your specific needs. 
 
 ---
 
@@ -16,45 +16,19 @@ There is a default launch file that includes:
 - Launch of the orbit and orbit publisher package.
 - The world file (converting the .xacro to .world) and then loading with then the gazebo_ros launcher.
 - Spacecraft / robot URDF loaded to the param server.
+- World position of the spacecraft / robot model in the world.
 - Loads of the ROS controllers.
 
 ---
 
 ## Modify the world
 
-The Gazebo world of the application is located in the worlds folder of the package and includes the physic properties of the simulation environment and the models of the orbit (by default called `orbitReference`). It is defined as a `.xacro` and converted to `.urdf` in the launch file as it must include the `laser_scan.xacro` to define the matrix of rays that simulate the air drag the spacecrafts suffer. Multiple sensors can be added and their size and position must be modified so they cover all the models of the simulations, going opposite to the direction of the motion (to calculate the atmospheric drag as it is explained in [Atmospheric Drag](/arquitechture/#atmospheric-drag)).
+The Gazebo world of the application is located in the worlds folder of the package and includes the physic properties of the simulation environment and the models of the orbit (by default called `orbitReference`). It is defined as a `.xacro` and converted to `.world` in the launch file. By default, the world is set to work under zero gravity conditions and the LVLH is located at the origin of the Gazebo frame of reference. 
 
-By default the world is set to work under zero gravity conditions and the LVLH located in the origin of the Gazebo frame of reference. Another link is created to host the atmospheric drag sensor, which is a fixed child of the LVLH in the y axis (but the distance to the origin and z value can be modified), and then that sensor can be configured to match with the specific applications. You will find the tag `<!-- custom -->` in the places that are specific of each application to modify them. 
+!!! note
+    If you encounter any errors when launching the world, for example that the default Gazebo world loads instead, create manually the `.world` file from the `.xacro` and leave it in the worlds forlder by executing the following command: 
 
-    <xacro:include filename="$(find ets_vii)/urdf/laser_scan.xacro"/>   <!-- Xacro for the laser sensor -->
-    
-    <!--- Load Sensors -->    
-      <!-- 
-        Pose offset in relation to "laser_link"; 
-        Configuration of the ray: lenght, number of rays, angles of the cone; 
-        Configuration of the matrix of rays: x and z number and separation; 
-        Topic to publish the data (coincident with the name of the URDF spacecraft model);
-      -->  
-    <xacro:multi_laser_scan     
-              x="-1.1"          
-              y="3" 
-              z="0.8"
-              roll="0"
-              pitch="0"
-              yaw="-1.5708"
-              visualize="true"
-              samples="1"
-              min_angle="-0.0"
-              max_angle="0.0"
-              length_ray="5"
-              num_lasers_x="10"
-              num_lasers_z="20"
-              offset_x="0.25" 
-              offset_z="0.25" 
-              topic="robot"
-              reference_link="etsVii_laser_link"/>
-
-That laser scan xacro generates <em>num_lasers_x * num_lasers_z</em> rays in the pose <em>x,y,z</em> with an offset among them of <em>offset_x</em> and <em>offset_z</em>. <em>samples</em> indicates the amount of rays for each sensor (forming a cone of rays), and <em>length_ray</em> the distance length of the ray in meters. Each sensor is fixed to a link jointed to the <em>reference_link</em> (by default ''name_laser_link'') and <em>topic</em> is the name of the URDF model of the spacecraft where the sensor information will be published (which must be coincident with the spacecraft model).
+        $ rosrun xacro xacro <path_to_world/world_name>.world.xacro > <path_to_world/world_name>.world
 
 ---
 
@@ -74,11 +48,83 @@ After creating your desired models, you must add the [Gazebo OORplugin](/archite
 
 That plugin is defined under `> orbit_ws > src > orbit_robot_pkg > src > Orbit_robot_pkg_plugin.cpp`, and uses the header `OrbitLink.h` from `OrbitLink.cpp`. These two latter files are used to define the properties of each link of the spacecraft, both cinematically and dynamically (such as positions, torques, velocities, etc), and to apply the gravity gradient and forces generated by the relative motion to an elliptical . Then, those methods are used by the principal file, `Orbit_robot_pkg_plugin.cpp`, that manages the subscription to the orbital topics explained above and manages the application of those perturbations and the atmospheric drag. The script includes comments that can be checked to better understand the implementation.
 
+!!! note
+    Place the base link of your model at the origin `(0,0,0)`. If you would like to give an offset to the model from the LVLH, change the origin of your model in the `.launch` file, NOT in the `.xacro` file. 
+
+        <arg name="world_pose" value="-x 0 -y 0 -z 1" />
+
+    Also, keep in mind that, if you set the LVLH link with visual elements (by default) and your model collides with it, the physical properties of said link will make your model to drift away. To solve it you can either set the offset as mentioned, or remove the visual properties of said link to: `<link name="referenceSpaceCraft"/>`.
+
+### Add the atmospheric drag sensor
+
+The spacecraft and robot's URDF file also defines the sensor used to simulate the atmospheric drag. The file must include the `laser_scan.xacro` to define the matrix of rays that simulate the air drag the spacecrafts suffer. Multiple sensors can be added and their size and position must be modified so they cover all the models of the simulations, going opposite to the direction of the motion (to calculate the atmospheric drag as it is explained in [Atmospheric Drag](architechture.md#atmospheric-drag)). As it is defined as link of the robot's model, it is possible to have a sensor for each of the possible models the simulation can hold. 
+
+Another link is created to host the atmospheric drag sensor, which is a **floating** child of the base link so the sensor matrix can have the orientation of the LVLH (opposite direction of the y axis) and keep an offset distance from the base link of the robot model (calculated from the laser plugin). That sensor can be configured to match with the specific applications, as the matrix should exceed the dimension of the model to ensure all parts are being influenced by the drag. You will find the tag `<!-- custom -->` in the places that are specific of each application to modify them. 
+
+    <xacro:include filename="$(find orbit_robot_pkg)/urdf/laser_scan.xacro"/>   <!-- Xacro for the laser sensor -->
+
+    <!--- SENSOR --->
+    <link name="drag_sensor_link"/>
+    <joint name="drag_sensor_joint" type="floating">
+        <parent link="base_link"/>
+        <child link="drag_sensor_link"/>
+        <origin xyz="0 2 1"/>
+    </joint-->
+
+    <!--- Load Sensors -->    
+    <!-- 
+    Pose offset in relation to "drag_sensor_link"; 
+    Configuration of the ray: lenght, number of rays, angles of the cone; 
+    Configuration of the matrix of rays: x and z number and separation; 
+    Offset of the sensor from the base of the model (it should match with the y components of the joint and pose)
+    Name of the model to publish the data from the sensor (it should match the name set in the .world file)
+    -->                         <!-- custom -->
+    <xacro:multi_laser_scan     
+            x="-0.0"          
+            y="2" 
+            z="1.0"
+            roll="0"
+            pitch="0"
+            yaw="-1.5708"
+            visualize="true"
+            samples="1"
+            min_angle="-0.0"
+            max_angle="0.0"
+            length_ray="6"
+            num_lasers_x="20"
+            num_lasers_z="20"
+            offset_x="0.25" 
+            offset_z="0.25" 
+            offset_model_sensor="2.0"
+            model_name="robot"
+            reference_link="drag_sensor_link"/>
+
+  
+
+That laser scan xacro generates <em>num_lasers_x * num_lasers_z</em> rays in the pose <em>x,y,z</em> from the reference link, with an offset among the rays of <em>offset_x</em> and <em>offset_z</em>. <em>samples</em> indicates the amount of rays for each sensor (forming a cone of rays), and <em>length_ray</em> the distance length of the ray in meters. Each sensor is fixed to a link jointed to the <em>reference_link</em> (by default ''drag_sensor_link'') and <em>model_name</em> is the name of the URDF model of the spacecraft where the sensor information will be published (which must be coincident with the spacecraft model set in the world file). The <em>offset_model_sensor</em> sets the distance between the base link of the model and the origin of the sensor matrix, that should be adapted according to the size of the model (eg. if the model is large the sensor should be farther away).
+
+
 ---
+
 
 ## Define an orbit
 
 The orbit is **declared** in a .yaml file located in `orbit_ws > orbit_publisher_pkg > config` (by default the file is `dynamic_orbit.yaml`). Then that file has to be loaded in the project's **launch**, which by default is `basic.launch` or `fix_basic.launch` for fixed orbits, and located under `orbit_ws > orbit_publisher_pkg > launch`. That launch is called from the project's main package, for example for the ETS VII application is `orbit_ws > ets_vii > launch > effort_controllers_wgg.launch`. The information defines the LVLH in reference to the ECI.
+
+In the declaration from the launch of the project you can define the `.yaml` to be used and whether it is called through a dynamic (upper example) or a fixed (lower example) launch:
+
+    <!-- Launch orbit and orbit plublisher package -->
+    <include file="$(find orbit_publisher_pkg)/launch/basic.launch">        <!-- custom -->
+        <arg name="orbit_file_name" value="dynamic_orbit.yaml" />     <!-- custom --> 
+    </include>
+
+    OR
+
+    <include file="$(find orbit_publisher_pkg)/launch/basic_fix.launch">     <!-- custom -->
+      <arg name="orbit_file_name" value="fixed_orbit.yaml" />     <!-- custom -->
+    </include>
+
+
 
 The information from the orbit .yaml file is **read by** `orbit_ws > orbit_publisher_pkg > src > Orbit.cpp` (that uses `Orbit.h` header that has all the variables and methods **defined**). The relevant orbit information is then **published** in their corresponding topics from the file `orbit_ws > orbit_publisher_pkg > src > orbit_publisher_pkg_node.cpp` (for fixed orbits the information is published from `fix_orbit_publisher_pkg_node.cpp`). In case more orbital information wants to be shared with the plugin it will be published from this script. 
 
@@ -99,12 +145,11 @@ Orbit information declared in the `.yaml` file in the <em>Simple Orbit</em> defa
             time start
             angular velocity
             atmosphere angular velocity
-            atmosphere air density
             drag coefficient
 ```
 
 >> ### Published Orbit Information
-Information being published in the following topics: 
+Information being published in the following topics. By default, the air density is calculated following the US Standard Atmosphere 1976 (USSA76) standard on each iteration from the altitude value (also calculated on each iteration from the other orbital parameters). 
 
 ```yaml
             /OrbitPosition
@@ -112,7 +157,12 @@ Information being published in the following topics:
             /AtmosphereAngularVelocity
             /OrbitAirDensity
             /OrbitDragCoeffient
+            /OrbitAltitude
 ```
+
+!!! note
+    The air density is calculated automatically with the USSA76 density profile from sea level to an altitude of 1000km. For orbits above that a different method should be taken into account, although atmospheric drag at that altitude could be disregarded.
+
 
 >> ### Add more Orbit Information
 In case more orbital information is needed, it can be **declared** in the `.yaml` file, **defined** in `Orbit.h`, **read** by `Orbit.cpp`and (if needed), **published** from `orbit_publisher_pkg_node.cpp`.

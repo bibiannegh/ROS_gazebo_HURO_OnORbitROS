@@ -3,7 +3,7 @@
 OnOrbitROS serves as a foundational platform for the study and development of on-orbit applications, leveraging the powerful
 combination of ROS and Gazebo for hyper-realistic simulations.
 
-Here you can find the architecture of the framework. In the OnOrbitROS workspace installed (see [Installation Guide](/Install) for more info on how to install it) you will find many pacakges, and the main structure is shown in the follwowing image. 
+Here you can find the architecture of the framework. In the OnOrbitROS workspace installed (see [Installation Guide](Install.md) for more info on how to install it) you will find many pacakges, and the main structure is shown in the follwowing image. 
 
 !!! note
     For extended information about this framework, its architecture, packages and controllers, and some applications go to [doi](https://doi.org/10.1016/j.simpat.2023.102790).
@@ -55,12 +55,27 @@ The user defines the orbit or trajectory that best fits the trajectory to be mod
 
 > ### Define an Orbit
 
-The orbit is **declared** in a .yaml file located in `orbit_ws > orbit_publisher_pkg > config` (by default the file is `dynamic_orbit.yaml`). Then that file has to be loaded in the project's **launch**, which by default is `basic.launch` or `fix_basic.launch` for fixed orbits, and located under `orbit_ws > orbit_publisher_pkg > launch`. That launch is then called from the project's main package, for example for the ETS VII application is `orbit_ws > ets_vii > launch > effort_controllers_wgg.launch`. The information defines the LVLH in reference to the ECI.
+The orbit is **declared** in a .yaml file located in `orbit_ws > orbit_publisher_pkg > config` (by default the file is `dynamic_orbit.yaml`). Then that file has to be loaded in the project's **launch**, which by default is `basic.launch` or `fix_basic.launch` for fixed orbits, and located under `orbit_ws > orbit_publisher_pkg > launch`. That launch is called from the project's main package, for example for the ETS VII application is `orbit_ws > ets_vii > launch > effort_controllers_wgg.launch`. The information defines the LVLH in reference to the ECI.
+
+In the declaration from the launch of the project you can define the `.yaml` to be used and whether it is called through a dynamic (upper example) or a fixed (lower example) launch:
+
+    <!-- Launch orbit and orbit plublisher package -->
+    <include file="$(find orbit_publisher_pkg)/launch/basic.launch">        <!-- custom -->
+        <arg name="orbit_file_name" value="dynamic_orbit.yaml" />     <!-- custom --> 
+    </include>
+
+    OR
+
+    <include file="$(find orbit_publisher_pkg)/launch/basic_fix.launch">     <!-- custom -->
+      <arg name="orbit_file_name" value="fixed_orbit.yaml" />     <!-- custom -->
+    </include>
+
+
 
 The information from the orbit .yaml file is **read by** `orbit_ws > orbit_publisher_pkg > src > Orbit.cpp` (that uses `Orbit.h` header that has all the variables and methods **defined**). The relevant orbit information is then **published** in their corresponding topics from the file `orbit_ws > orbit_publisher_pkg > src > orbit_publisher_pkg_node.cpp` (for fixed orbits the information is published from `fix_orbit_publisher_pkg_node.cpp`). In case more orbital information wants to be shared with the plugin it will be published from this script. 
 
 >> #### Default Orbit Information
-Orbit information declared in the `.yaml` file in the <em>Simple Orbit</em> default module:
+Orbit information declared in the `.yaml` file in the <em>Simple Orbit</em> default module. The value's units are km and º accordingly as presented in Two-Line Element (TLE) set. 
 
 ```yaml
             publish rate
@@ -76,12 +91,11 @@ Orbit information declared in the `.yaml` file in the <em>Simple Orbit</em> defa
             time start
             angular velocity
             atmosphere angular velocity
-            atmosphere air density
             drag coefficient
 ```
 
 >> #### Published Orbit Information
-Information being published in the following topics: 
+Information being published in the following topics. By default, the air density is calculated following the US Standard Atmosphere 1976 (USSA76) standard on each iteration from the altitude value (also calculated on each iteration from the other orbital parameters). 
 
 ```yaml
             /OrbitPosition
@@ -89,10 +103,11 @@ Information being published in the following topics:
             /AtmosphereAngularVelocity
             /OrbitAirDensity
             /OrbitDragCoeffient
+            /OrbitAltitude
 ```
 
->> #### Add more Orbit Information
-In case more orbital information is needed, it can be **declared** in the `.yaml` file, **defined** in `Orbit.h`, **read** by `Orbit.cpp`and (if needed), **published** from `orbit_publisher_pkg_node.cpp`.
+!!! note
+    The air density is calculated automatically with the USSA76 density profile from sea level to an altitude of 1000km. For orbits above that a different method should be taken into account, although atmospheric drag at that altitude could be disregarded.
 
 
 >> #### Hierarchy
@@ -152,35 +167,45 @@ $$ D = \frac{1}{4} \rho v_{\text{rel}}^2 C_D A $$
 
 >> Where \( \rho \) is the air density, \( v_{\text{rel}} \) the relative velocity of the spacecraft in relation to the atmosphere, \( C_D \) the drag coefficient, and \( A \) the area of impact.
 
-The area of impact of the air with the surface has been simulated using a matrix of single rays, as it is shown in the next image, so the drag is calculated and applied in the area corresponding to each ray. That matrix has to be modified on each application so it covers all the models, and that can be done from the world's file. For example, in the default case of the ETS VII project changing the call to the laser scaner xacro from `> orbit_ws > src > ets_vii > worlds > no_gravity.world.xacro`: 
+The area of impact of the air with the surface has been simulated using a matrix of single rays, as it is shown in the next image, so the drag is calculated and applied in the area corresponding to each ray. That matrix has to be modified on each application so it covers all the models, and that can be done from the model's file. For example, in the default case of the ETS VII project changing the call to the laser scaner xacro from `> orbit_ws > src > ets_vii > urdf > ets_vii_gazebo_wgg.xacro`: 
 
-    <xacro:include filename="$(find ets_vii)/urdf/laser_scan.xacro"/>   <!-- Xacro for the laser sensor -->
-    
+    <xacro:include filename="$(find orbit_robot_pkg)/urdf/laser_scan.xacro"/>   <!-- Xacro for the laser sensor -->
+
+    <!--- SENSOR --->
+    <link name="drag_sensor_link"/>
+    <joint name="drag_sensor_joint" type="floating">
+        <parent link="base_link"/>
+        <child link="drag_sensor_link"/>
+        <origin xyz="0 2 1"/>
+    </joint-->
+
     <!--- Load Sensors -->    
-      <!-- 
-        Pose offset in relation to "laser_link"; 
-        Configuration of the ray: lenght, number of rays, angles of the cone; 
-        Configuration of the matrix of rays: x and z number and separation; 
-        Topic to publish the data (coincident with the name of the URDF spacecraft model);
-      -->   
+    <!-- 
+    Pose offset in relation to "drag_sensor_link"; 
+    Configuration of the ray: lenght, number of rays, angles of the cone; 
+    Configuration of the matrix of rays: x and z number and separation; 
+    Offset of the sensor from the base of the model (it should match with the y components of the joint and pose)
+    Name of the model to publish the data from the sensor (it should match the name set in the .world file)
+    -->                         <!-- custom -->
     <xacro:multi_laser_scan     
-              x="-1.1"          
-              y="3" 
-              z="0.8"
-              roll="0"
-              pitch="0"
-              yaw="-1.5708"
-              visualize="true"
-              samples="1"
-              min_angle="-0.0"
-              max_angle="0.0"
-              length_ray="5"
-              num_lasers_x="10"
-              num_lasers_z="20"
-              offset_x="0.25" 
-              offset_z="0.25" 
-              topic="robot"
-              reference_link="etsVii_laser_link"/>
+            x="-0.0"          
+            y="2" 
+            z="1.0"
+            roll="0"
+            pitch="0"
+            yaw="-1.5708"
+            visualize="true"
+            samples="1"
+            min_angle="-0.0"
+            max_angle="0.0"
+            length_ray="6"
+            num_lasers_x="20"
+            num_lasers_z="20"
+            offset_x="0.25" 
+            offset_z="0.25" 
+            offset_model_sensor="2.0"
+            model_name="robot"
+            reference_link="drag_sensor_link"/>
 
 ![alt text](images/drag.png "Drag implementation")
 

@@ -7,9 +7,13 @@ simulations. It is based on Robot Operating System (ROS) and includes and reprod
 
 ## About Us
 <div style="float: right;">
-    <img src="images/logo_huro_fondo_blanco.png" width="100" height="50" alt="HURO Logo">
+    <img src="images/hurospace.jpg" width="100" height="50" alt="HURO Logo">
 </div>
-Developed by Human Robotics (HURO) group, University of Alicante, Spain. 
+Developed by Human Robotics (HURO) group, University of Alicante (Spain).   
+In collaboration with the School of Aerospace, Transport and Manufacturing, Cranfield University (United Kingdom). 
+
+![alt text](images/ua.png "University of Alicante") <img src="images/cranfield.png" alt="Cranfield University" style="width: 19%;" />
+
 
 Space robotics broadly encompasses the application of robots and autonomous systems for operations in the space environment. HURO Space Robotics section investigates the development of robotic systems and their control for performing tasks in space.
 
@@ -17,7 +21,7 @@ Space robotics broadly encompasses the application of robots and autonomous syst
     You can find more information about this project and other works in our website:
     [HURO Space Robotics](https://www.huro.ua.es/index.php/research/research-lines/space-robotics)
 
-    Follow us on [LinkedIn](https://www.linkedin.com/company/human-robotics-huro/mycompany/) for more updates!
+    &nbsp; <img src="images/linkedin.png" alt="LinkedIn" style="width: 4%;"/>  &nbsp; Follow us on [LinkedIn](https://www.linkedin.com/company/human-robotics-huro/mycompany/) for more updates! 
 
 ## Licenses
 
