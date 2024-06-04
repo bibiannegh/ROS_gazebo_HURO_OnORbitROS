@@ -40,3 +40,4 @@ nav:
   - Developer Guide: 
     - Architechture: architechture.md
     - Create a new Application: application.md
+    - Troubleshooting: troubleshooting.md

@@ -36,7 +36,7 @@ The Gazebo world of the application is located in the worlds folder of the packa
 
 The spacecraft and robots are loaded URDFs converted from XACROS. This is the protocol Gazebo has to load the different models in the simulation where you can define the different links, joints, controllers... of the model. You can find many guides on how to defined them, as these [URDF tutorials](https://wiki.ros.org/urdf/Tutorials). 
 
-After creating your desired models, you must add the [Gazebo OORplugin](/architechture/#gazebo-oorplugin) at a plugin at the end of the model as follows: 
+After creating your desired models, you must add the [Gazebo OORplugin](architechture.md#gazebo-oorplugin) at a plugin at the end of the model as follows: 
 
     <gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -129,7 +129,7 @@ In the declaration from the launch of the project you can define the `.yaml` to 
 The information from the orbit .yaml file is **read by** `orbit_ws > orbit_publisher_pkg > src > Orbit.cpp` (that uses `Orbit.h` header that has all the variables and methods **defined**). The relevant orbit information is then **published** in their corresponding topics from the file `orbit_ws > orbit_publisher_pkg > src > orbit_publisher_pkg_node.cpp` (for fixed orbits the information is published from `fix_orbit_publisher_pkg_node.cpp`). In case more orbital information wants to be shared with the plugin it will be published from this script. 
 
 >> ### Default Orbit Information
-Orbit information declared in the `.yaml` file in the <em>Simple Orbit</em> default module:
+Orbit information declared in the `.yaml` file in the <em>Simple Orbit</em> default module. The value's units are km and º accordingly as presented in Two-Line Element (TLE) set.
 
 ```yaml
             publish rate
