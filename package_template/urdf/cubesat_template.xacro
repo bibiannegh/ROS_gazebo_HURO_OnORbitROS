@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+
+<robot name="cubesat" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- MODEL -->
+    <link name="dummy_base_link"/>
+
+    <link name="base_link">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <box size="0.1 0.1 0.1" />
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.1 0.1 0.1" />
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="1" />
+            <inertia ixx="0.0016667" ixy="0.0" ixz="0.0" iyy="0.0016667" iyz="0" izz="0.0016667" />
+        </inertial>
+    </link>
+    <!-- JOINTS -->
+    <joint name="dummy_joint" type="fixed">
+        <parent link="dummy_base_link"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0"/>
+    </joint>
+    
+    <!-- GAZEBO -->
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/</robotNamespace>
+        </plugin>
+        
+       <plugin name="Orbit_robot_pkg_plugin" filename="libOrbit_robot_pkg_plugin.so"/> 
+    </gazebo>
+</robot>

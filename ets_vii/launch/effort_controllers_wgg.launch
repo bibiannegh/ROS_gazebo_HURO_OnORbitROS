@@ -1,8 +1,20 @@
 <?xml version="1.0"?>
 <launch>
 
-  <include file="$(find orbit_publisher_pkg)/launch/basic_fix.launch" />
+  <!-- Launch orbit and orbit plublisher package -->
+  <!-- Fixed Orbit -->
+  <!-- <include file="$(find orbit_publisher_pkg)/launch/basic_fix.launch">
+      <arg name="orbit_file_name" value="fixed_orbit.yaml" /> 
+  </include> -->
+  
+  <!-- Dynamic Orbit -->
+  <arg name="publish" default="true" />
+  <include file="$(find orbit_publisher_pkg)/launch/basic.launch">
+      <arg name="orbit_file_name" value="dynamic_orbit.yaml" /> 
+      <arg name="publish_orbit_parameters" value="$(arg publish)" /> 
+  </include>
 
+  <!-- Gazebo Simulation -->
   <arg name="paused" default="false"/>
   <arg name="gazebo_gui" default="true"/>
   <arg name="initial_joint_positions" doc="Initial joint configuration of the robot"
@@ -13,6 +25,8 @@
   <arg name="debug" default="false" />
   <arg name="gui" default="true" />
   <arg name="pause" default="false" />
+
+  <!-- Load World file -->
   <!-- <arg name="world" default="$(find ets_vii)/worlds/no_gravity_dart.world" /> -->
   <arg name="world" default="$(find ets_vii)/worlds/no_gravity.world" />
 

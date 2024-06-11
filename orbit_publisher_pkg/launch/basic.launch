@@ -1,8 +1,13 @@
 <launch>
-<arg name="name" value="orbit_IIS" />
-<group ns="$(arg name)">
-  <rosparam command="load" file="$(find orbit_publisher_pkg)/config/dynamic_orbit.yaml" />
-  <!-- <node name="orbit" pkg="orbit_publisher_pkg" type="orbit_publisher_pkg_node" launch-prefix="xterm -e gdb -(to delete)-args"/> -->
-  <node name="orbit" pkg="orbit_publisher_pkg" type="orbit_publisher_pkg_node" />
-</group>
+    <arg name="name" value="orbit_IIS" />
+    <arg name="orbit_file_name" default="dynamic_orbit.yaml" />
+    <arg name="publish_orbit_parameters" default="true" />
+  <group ns="$(arg name)">
+    <rosparam command="load" file="$(find orbit_publisher_pkg)/config/$(arg orbit_file_name)" />
+    <!-- <rosparam command="load" file="$(find orbit_publisher_pkg)/config/dynamic_orbit.yaml" /> -->
+    <!-- <node name="orbit" pkg="orbit_publisher_pkg" type="orbit_publisher_pkg_node" launch-prefix="xterm -e gdb -(to delete)-args"/> -->
+    <node name="orbit" pkg="orbit_publisher_pkg" type="orbit_publisher_pkg_node">
+        <param name="publish_orbit_parameters" value="$(arg publish_orbit_parameters)" />
+    </node>
+  </group>
 </launch>

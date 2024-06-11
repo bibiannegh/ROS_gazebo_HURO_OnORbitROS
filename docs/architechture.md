@@ -55,13 +55,15 @@ The user defines the orbit or trajectory that best fits the trajectory to be mod
 
 > ### Define an Orbit
 
-The orbit is **declared** in a .yaml file located in `orbit_ws > orbit_publisher_pkg > config` (by default the file is `dynamic_orbit.yaml`). Then that file has to be loaded in the project's **launch**, which by default is `basic.launch` or `fix_basic.launch` for fixed orbits, and located under `orbit_ws > orbit_publisher_pkg > launch`. That launch is called from the project's main package, for example for the ETS VII application is `orbit_ws > ets_vii > launch > effort_controllers_wgg.launch`. The information defines the LVLH in reference to the ECI.
+The orbit is **declared** in a .yaml file located in `orbit_ws > orbit_publisher_pkg > config` (by default the file is `dynamic_orbit.yaml`), and defines the LVLH information in reference to the ECI. Then that file has to be loaded from the application's **launch** file, for example `orbit_ws > ets_vii > launch > effort_controllers_wgg.launch` for the ETS VII application, that calls another specific launch which by default is `basic.launch` or `fix_basic.launch` for fixed orbits, and located under `orbit_ws > orbit_publisher_pkg > launch`.
 
-In the declaration from the launch of the project you can define the `.yaml` to be used and whether it is called through a dynamic (upper example) or a fixed (lower example) launch:
+In the declaration from the launch of the project you can define the `.yaml` to be used and whether it is called through a dynamic (upper example) or a fixed (lower example) launch. In case the orbit is not fixed, you can also specify whether the orbital parameters calculated from the State Vector are published during the simulation or not in the argument `publish_orbit_parameters` (values such as Inclination, Eccentricity, RAAN, etc).
 
     <!-- Launch orbit and orbit plublisher package -->
+    <arg name="publish" default="true" />           <!-- custom --> 
     <include file="$(find orbit_publisher_pkg)/launch/basic.launch">        <!-- custom -->
         <arg name="orbit_file_name" value="dynamic_orbit.yaml" />     <!-- custom --> 
+        <arg name="publish_orbit_parameters" value="$(arg publish)" />  
     </include>
 
     OR
@@ -109,6 +111,17 @@ Information being published in the following topics. By default, the air density
 !!! note
     The air density is calculated automatically with the USSA76 density profile from sea level to an altitude of 1000km. For orbits above that a different method should be taken into account, although atmospheric drag at that altitude could be disregarded.
 
+Other information regarding the orbital parameters is calculated during the simulation from the State Vector (position and velocity). This data can be published or not by specifying it when calling the launch file, under `publish_orbit_parameters`.
+
+```yaml
+            /OrbitArgumentOfPerigee
+            /OrbitEccentricity
+            /OrbitInclination
+            /OrbitPeriod
+            /OrbitRAAN
+            /OrbitSemiMajorAxis
+            /OrbitTrueAnomaly
+```
 
 >> #### Hierarchy
 Hierarchy of the files involved in the declaration and use of the orbit for the ETS VII example:

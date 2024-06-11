@@ -32,3 +32,10 @@ Packages for the controllers:
 - [Joint State Controller](https://wiki.ros.org/joint_state_controller):    `$ sudo apt-get install ros-noetic-joint-state-controller`
 - [Effort Controller](https://wiki.ros.org/effort_controllers): `$ sudo apt-get install ros-noetic-effort-controller`
 - [Position Controllers](https://wiki.ros.org/position_controllers):    `$ sudo apt-get install ros-noetic-position-controllers`  
+
+---
+
+### Rosbag missing
+To save the information in a file use the following command on your launch. If the folder you have specified in the command does not exist, the rosbag will not be saved. By default it is located under the folder `log` in the project.
+
+    <node pkg="rosbag" type="record" name="rosbag_record" args="record -o $(find <your_package_name>/log/data /<your_topics>"/>

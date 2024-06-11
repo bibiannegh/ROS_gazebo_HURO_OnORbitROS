@@ -44,6 +44,15 @@ class Orbit
         double GetPeriod(){ return period; }
         double GetMeanMotion(){return mean_motion; }
         double GetEccentricAnomaly(){return eccentric_anomaly; }
+        double GetAltitude(){return altitude; }
+
+        double GetSimEccentricity() {return sim_eccentricity;}      // Get Orbit Parameters
+        double GetSimSemiMajorAxis() {return sim_semi_major_axis; }     
+        double GetSimInclination() {return sim_inclination; }       
+        double GetSimRateOfRightAscension() { return sim_right_ascension_node; }        
+        double GetSimArgumentOfPerigee() { return sim_argument_of_perigee; }        
+        double GetSimTrueAnomaly() { return sim_true_anomaly; }     
+        double GetSimPeriod() { return sim_period; }        
 
         //Setters
         void SetName(std::string val) { name = val; }
@@ -66,6 +75,14 @@ class Orbit
         void SetPeriod ( double val) {period = val; }
         void SetMeanMotion(double val) {mean_motion = val;}
         void SetEccentricAnomaly(double val) {eccentric_anomaly = val;}
+
+        void SetSimEccentricity(double val) { sim_eccentricity = val;}      // Set Orbit Parameters
+        void SetSimSemiMajorAxis(double val) { sim_semi_major_axis = val; }     
+        void SetSimInclination(double val) { sim_inclination = val; }       
+        void SetSimRateOfRightAscension(double val) {  sim_right_ascension_node = val; }        
+        void SetSimArgumentOfPerigee(double val) {  sim_argument_of_perigee = val; }        
+        void SetSimTrueAnomaly(double val) {  sim_true_anomaly = val; }     
+        void SetSimPeriod(double val) {  sim_period = val; }  
         
         //Const
         const double kMUe = 398600.5; //Earth's gravitational constant (Km^3/s^2)
@@ -74,8 +91,10 @@ class Orbit
         const double kJ2 = 1.082e-3;
         const double kg0 = 9.81 ; // m/s
         
+        //Functions
         void KeplerianToEci(double time );
-
+        double CalcAltitude(double time);
+        void CalcOrbitParamsFromSV(double time);
 
 
     private:
@@ -95,6 +114,16 @@ class Orbit
         double mean_motion;
         double eccentric_anomaly;
         double mu_divided_h;
+        double altitude; 
+
+        double sim_eccentricity;       
+        double sim_semi_major_axis;    
+        double sim_inclination;     
+        double sim_right_ascension_node;       
+        double sim_angular_momentum;        
+        double sim_argument_of_perigee;    
+        double sim_true_anomaly;        
+        double sim_period;     
        
         Eigen::Matrix<double, 3, 1> position_eci_ini;
         Eigen::Matrix<double, 3, 1> velocity_eci_ini;

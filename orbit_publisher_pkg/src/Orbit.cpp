@@ -265,3 +265,88 @@ void Orbit::J2Effect()
         rate_argument_of_perigee = (3.0 / 2.0) * kJ2 / eccentricity * pow((kRe/p),2) * (2.0 - 5.0 / 2.0 * pow(sin(inclination),2)) * n0;
     }
 }
+
+// Calculates the current altitude of the satellite     
+double Orbit::CalcAltitude(double time)
+{
+    KeplerianToEci(time);   //convert orbital parameters to ECI coordinates
+    Eigen::Vector3d position = GetPositionEci();   
+    double r = position.norm();
+    altitude = r - Orbit::kRe; 
+    return altitude;
+}
+
+// Calculates the kelerian parameters from the state vector (position and velocity)
+// Adapted from Curtis, H. D. (2020) Orbital Mechanics for Engineering Students, ISBN: 978-0-08-102133-0
+void Orbit::CalcOrbitParamsFromSV(double time)
+{
+    KeplerianToEci(time);   //convert orbital parameters to ECI coordinates
+    Eigen::Vector3d R = GetPositionEci();   
+    Eigen::Vector3d V = GetVelocityEci();
+    double r = R.norm();    //position and velocity norms
+    double v = V.norm();
+
+    double vr = R.dot(V) / r;   // radial velocity component
+
+    Eigen::Vector3d H = R.cross(V);     // Angular Momentum
+    sim_angular_momentum = H.norm();
+
+    sim_inclination = acos(H(2) / sim_angular_momentum);  // Inclination
+
+    Eigen::Vector3d K(0.0, 0.0, 1.0);   // node line to calculate the RAAN
+    Eigen::Vector3d N = K.cross(H);
+    double n = N.norm();    
+    if ( n != 0 ){
+        sim_right_ascension_node = acos(N(0) / n );
+        if ( N(1) < 0 ){
+            sim_right_ascension_node = 2 * M_PI - sim_right_ascension_node;
+        }
+    }
+    else{
+        sim_right_ascension_node = 0;
+    }
+
+    Eigen::Vector3d E = (1.0 / kMUe) * ((pow(v,2) - kMUe/r) * R - r*vr*V);   // Eccentricity
+    sim_eccentricity = E.norm();
+
+    if ( n != 0 ){      // Argument of perigee
+        if ( sim_eccentricity > 1.e-10 ){
+            sim_argument_of_perigee = acos(N.dot(E) / n / sim_eccentricity);
+            if ( E(2) < 0 ){
+                sim_argument_of_perigee = 2 * M_PI - sim_argument_of_perigee;
+            }
+        }
+        else{
+            sim_argument_of_perigee = 0;
+        }
+    }
+    else{
+        sim_argument_of_perigee = 0;
+    }
+
+    if ( sim_eccentricity > 1.e-10 ){        // True Anomaly
+        sim_true_anomaly = acos(E.dot(R) / sim_eccentricity / r);
+        if( vr < 0 ){
+            sim_true_anomaly = 2 * M_PI - sim_true_anomaly;
+        } 
+    }
+    else{
+        Eigen::Vector3d cp = N.cross(R);
+        if ( cp(2) >= 0 ){
+            sim_true_anomaly = acos(N.dot(R) / (n * r));
+        }
+        else{
+            sim_true_anomaly = 2 * M_PI - acos(N.dot(R) / n / r);
+        }
+    }
+
+    sim_semi_major_axis = sim_angular_momentum * sim_angular_momentum / kMUe / (1 - sim_eccentricity * sim_eccentricity);    // semi major axis
+
+    sim_period = 2 * M_PI / sqrt(kMUe) * pow(sim_semi_major_axis, 1.5);     // Period
+
+    // Convert from rad to deg (º)
+    sim_inclination = sim_inclination * 180 / M_PI; 
+    sim_right_ascension_node = sim_right_ascension_node * 180 / M_PI;
+    sim_argument_of_perigee = sim_argument_of_perigee;
+    sim_true_anomaly = sim_true_anomaly * 180 / M_PI;
+}

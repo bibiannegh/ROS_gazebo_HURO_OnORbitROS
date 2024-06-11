@@ -36,8 +36,10 @@ nav:
     - HURO Space Robotics: huro.html
   - User Guide:
     - Installation Guide: Install.md
+    - Launch Application: launch.md
     - Examples of Aplications: examples.md
   - Developer Guide: 
     - Architechture: architechture.md
     - Create a new Application: application.md
     - Troubleshooting: troubleshooting.md
+    - Experiments: experiments.md

@@ -1,3 +1,14 @@
+/*** Spacecraft / robot in orbit Package Plugin ***/
+/* 
+    Plugin to update the properties of the spacecraft / robot / model in the simulation counting perturbations
+
+    This plugin can be used by each of the models as follows: 
+        <plugin name="Orbit_robot_pkg_plugin" filename="libOrbit_robot_pkg_plugin.so"/> 
+
+    Developed by: Human Robotics Laboratoy (University of Alicante)
+    https://www.huro.ua.es/index.php/research/research-lines/space-robotics 
+*/
+
 #include <functional>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
@@ -18,6 +29,7 @@ namespace gazebo
   {
     public: void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
     {
+      // World and orbit information and configuration
       physics::WorldPtr _world =_parent->GetWorld();
       this->orbitReference = _world->ModelByName("orbitReference");
       this->referenceSpaceCraft = this->orbitReference->GetLink("referenceSpaceCraft");
@@ -30,7 +42,8 @@ namespace gazebo
       _world->SetAtmosphereEnabled(false); 
       _world->SetMagneticField(g);
       _world->SetWindEnabled(false);	
-      // Crate a topic name 
+
+      // *** ROS node of the orbit *** //
       std::string orbitPositionTopicName = "/OrbitPosition";
       
       this->rosNode.reset(new ros::NodeHandle("orbitRobotPlugin_rosnode"));
@@ -40,6 +53,7 @@ namespace gazebo
         angularVelocity = 0;
       }
 
+      // Orbit Position
       ros::SubscribeOptions so = ros::SubscribeOptions::create<geometry_msgs::Pose>(
         orbitPositionTopicName,
         1,
@@ -77,10 +91,12 @@ namespace gazebo
         }
       }
       
+      // *** Simulation *** //
+      // Listen to the update event. This event is broadcast every simulation iteration.
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(
           std::bind(&Orbit_robot_pkg_plugin::OnUpdate, this));
 
-      
+      // Simulation and log info
       this->now_secs =ros::Time::now().toSec();
       this->old_secs = now_secs;
       
@@ -93,6 +109,8 @@ namespace gazebo
       }
     }
 
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+
     public: void OnUpdate()
     {
       bool publish = false; 
@@ -100,10 +118,8 @@ namespace gazebo
       publish =  ((this->now_secs - this->old_secs) > 1.0 ); 
       
       
-      if (this->now_secs > 600.0)
+      if (this->now_secs > 600.0) //Specific case for the ETS_VII as the reference simulation starts after 10 minutes
       {
-
-     
 
         for (auto &workingSatellite : orbitLinkVector)
         {
@@ -136,6 +152,9 @@ namespace gazebo
       }
     }
 
+    // +++++++++++++++  Callbacks  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+
+    // Update the orientation of the spacecraft in the orbit and get the position vector
     public: void OnPositionUpdate(const geometry_msgs::PoseConstPtr &_msg)
     {
       orbitQ.w()= _msg->orientation.w;
@@ -154,6 +173,8 @@ namespace gazebo
       this->referenceSpaceCraft->SetWorldPose(poseReferenceSpaceCraft);  
     }
     
+    // +++++++++++++++  Queue Threads  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+
     private: void QueueThread()
     {
       static const double timeout = 2.0;
@@ -162,6 +183,9 @@ namespace gazebo
         this->rosOrbitPosQueue.callAvailable(ros::WallDuration(timeout));
       }
     } 
+
+
+    // +++++++++++++++  Declarations  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
     private: 
             physics::ModelPtr model;
             physics::ModelPtr orbitReference;
