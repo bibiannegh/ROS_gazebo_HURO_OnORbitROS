@@ -146,7 +146,7 @@ As the orbit is defined in the package `orbit_robot_publisher`, the OORplugin is
 
 >> #### Load and use the plugin
 
-The defined spacecraft, located under the project's package urdf folder, must include the following plugins, one for the control and the other lo load the Gazebo OORplugin. The page [Add a spacecraft](/application/#add-a-spacecraft) of this documentation has a guide on how to define this URDF. 
+The defined spacecraft, located under the project's package urdf folder, must include the following plugins, one for the control and the other lo load the Gazebo OORplugin. The page [Add a spacecraft](application.md/#add-a-spacecraft) of this documentation has a guide on how to define this URDF. 
 
     <gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">

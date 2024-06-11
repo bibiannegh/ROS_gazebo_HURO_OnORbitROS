@@ -71,9 +71,9 @@ In the graphs below, the orbital position relative to the ECI (Earth MJ2000) fra
 
 The table following the graphs presents the numerical data for the maximum values of the orbital position and the mean altitude. The orbital shapes and maximum values obtained using OnOrbitROS are consistent with those from GMAT, with relative errors under 1%, using GMAT as the reference standard.
 
-<img src="/images/circularOnOrbitROS.png" alt="OnOrbitROS" style="width: 45%;" /> <img src="/images/circularGMAT.jpg" alt="OnOrbitROS" style="width: 53%;" />
+<img src="images/circularOnOrbitROS.png" alt="Circular Orbit OnOrbitROS" style="width: 45%;" /> <img src="images/circularGMAT.jpg" alt="Circular Orbit GMAT" style="width: 53%;" />
 
-<img src="/images/circularResults.jpeg" alt="OnOrbitROS" style="width: 50%;" />
+<img src="images/circularResults.jpeg" alt="Circular Orbit" style="width: 50%;" />
 
 
 >> ### Elliptic Orbit
@@ -84,9 +84,10 @@ The same orbit has been evaluated in this case with an eccentricity value of 0.0
 
 The following graphs show the results for the elliptic orbit, following the same format as used for the circular orbit. The shapes of the orbits in both cases are consistent, with a maximum relative error of 1.64%.
 
-<img src="/images/elipticOnOrbitROS.png" alt="OnOrbitROS" style="width: 45%;" /> <img src="/images/ellipticGMAT.jpg" alt="OnOrbitROS" style="width: 53%;" />
+<img src="images/elipticOnOrbitROS.png" alt="Elliptic Orbit OnOrbitROS" style="width: 45%;" /> <img src="images/ellipticGMAT.jpg" alt="Elliptic Orbit GMAT" style="width: 53%;" />
 
-<img src="/images/ellipticResults.jpeg" alt="OnOrbitROS" style="width: 50%;" />
+<img src="images/ellipticResults.jpeg" alt="Elliptic Orbit" style="width: 50%;" />
+
 
 ---
 
