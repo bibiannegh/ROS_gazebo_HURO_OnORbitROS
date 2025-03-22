@@ -1,5 +1,5 @@
 <?xml version="1.0"?> 
-<sdf version="1.4">
+<sdf version="1.7">
 
 
   <world name="default" xmlns:xacro="http://ros.org/wiki/xacro">
@@ -11,7 +11,7 @@
       <real_time_update_rate>100</real_time_update_rate>
       <ode>
         <solver>
-          <type>world</type>
+          <type>quick</type>
         </solver>
       </ode>
     </physics>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="debris_objects">
+
+  <xacro:macro name="debris_object" params="name x y z">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <sphere radius="0.1"/>
+        </geometry>
+        <material name="red">
+          <color rgba="1.0 0.0 0.0 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <sphere radius="0.1"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.001"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+      </inertial>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Example debris objects placed farther away -->
+  <xacro:debris_object name="debris1" x="100" y="0" z="50"/>
+  <xacro:debris_object name="debris2" x="-100" y="0" z="50"/>
+  <xacro:debris_object name="debris3" x="0" y="100" z="50"/>
+
+</robot>
