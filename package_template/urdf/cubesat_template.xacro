@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?xml version="1.0"?>
 
 <robot name="cubesat" xmlns:xacro="http://ros.org/wiki/xacro">
@@ -40,4 +41,179 @@
         </plugin>
         <plugin name="Orbit_robot_pkg_plugin" filename="libOrbit_robot_pkg_plugin.so"/>
     </gazebo>
+=======
+<?xml version="1.0" ?>
+<robot name="cubesat" xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:include filename="$(find package_template)/urdf/debris.xacro"/>
+
+  <!-- MODEL -->
+  <link name="dummy_base_link"/>
+  <link name="base_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="0.1 0.1 0.1" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.1 0.1 0.1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1" />
+      <inertia ixx="0.0016667" ixy="0.0" ixz="0.0" iyy="0.0016667" iyz="0" izz="0.0016667" />
+    </inertial>
+  </link>
+  <!-- JOINTS -->
+  <joint name="dummy_joint" type="fixed">
+    <parent link="dummy_base_link"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+  
+  <xacro:property name="lidar_height" value="0.03"/>
+  <xacro:property name="lidar_radius" value="0.01"/>
+  
+  <!-- Adding 3D LiDARs -->
+  <link name="lidar_link">
+    <visual>
+      <geometry>
+        <cylinder length="${lidar_height}" radius="${lidar_radius}"/>
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${lidar_height}" radius="${lidar_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0.02 0.03 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 3D LiDAR Sensor -->
+  <gazebo reference="lidar_link">
+    <sensor type="gpu_ray" name="lidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <gpu_ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>64</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.523599</min_angle>
+            <max_angle>0.523599</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </gpu_ray>
+      <plugin name="gazebo_ros_gpu_laser" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>/scan</topicName>
+        <frameName>lidar_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo> 
+
+  <!-- Duplicate 3D LiDAR at the bottom -->
+  <link name="bottom_lidar_link">
+    <visual>
+      <geometry>
+        <cylinder length="${lidar_height}" radius="${lidar_radius}"/>
+      </geometry>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder length="${lidar_height}" radius="${lidar_radius}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <joint name="bottom_lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="bottom_lidar_link"/>
+    <origin xyz="0 0 -0.05" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="bottom_lidar_link">
+    <sensor type="gpu_ray" name="bottom_lidar_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <gpu_ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>64</samples>
+            <resolution>1</resolution>
+            <min_angle>-0.523599</min_angle>
+            <max_angle>0.523599</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </gpu_ray>
+      <plugin name="gazebo_ros_gpu_laser" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>/bottom_scan</topicName>
+        <frameName>bottom_lidar_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+    </plugin>
+    
+    <plugin name="Orbit_robot_pkg_plugin" filename="libOrbit_robot_pkg_plugin.so"/> 
+  </gazebo>
+>>>>>>> 2111b80804b5079857b78593d414a01f8aded027
 </robot>

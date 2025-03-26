@@ -17,9 +17,15 @@
         </geometry>
       </collision>
       <inertial>
+<<<<<<< HEAD
         <mass value="0.01"/>
         <origin xyz="0 0 0"/>
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001"/>
+=======
+        <mass value="0.001"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.000001" ixy="0.0" ixz="0.0" iyy="0.000001" iyz="0.0" izz="0.000001"/>
+>>>>>>> 2111b80804b5079857b78593d414a01f8aded027
       </inertial>
     </link>
     <joint name="${name}_joint" type="fixed">
@@ -29,9 +35,18 @@
     </joint>
   </xacro:macro>
 
+<<<<<<< HEAD
   <!-- Example debris objects -->
   <xacro:debris_object name="debris1" x="1" y="0" z="0.5"/>
   <xacro:debris_object name="debris2" x="-1" y="0" z="0.5"/>
   <xacro:debris_object name="debris3" x="0" y="1" z="0.5"/>
 
 </robot>
+=======
+  <!-- Example debris objects placed farther away -->
+  <xacro:debris_object name="debris1" x="100" y="0" z="50"/>
+  <xacro:debris_object name="debris2" x="-100" y="0" z="50"/>
+  <xacro:debris_object name="debris3" x="0" y="100" z="50"/>
+
+</robot>
+>>>>>>> 2111b80804b5079857b78593d414a01f8aded027
