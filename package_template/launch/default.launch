@@ -1,74 +1,61 @@
 <?xml version="1.0"?>
 <launch>
 
-  <!-- Launch orbit and orbit plublisher package -->
-  <arg name="publish" default="true" />         <!-- custom -->
+  <!-- Launch orbit and orbit publisher package -->
+  <arg name="publish" default="true" />
   <include file="$(find orbit_publisher_pkg)/launch/basic.launch">
-      <arg name="orbit_file_name" value="dynamic_orbit.yaml" />         <!-- custom -->
-      <arg name="publish_orbit_parameters" value="$(arg publish)" /> 
+    <arg name="orbit_file_name" value="dynamic_orbit.yaml" />
+    <arg name="publish_orbit_parameters" value="$(arg publish)" />
   </include>
 
   <!-- Gazebo Simulation -->
   <arg name="paused" default="false"/>
   <arg name="gazebo_gui" default="true"/>
-          <!-- arg name="initial_joint_positions" doc="Initial joint configuration of the robot"
-              default=" -J joint1 0 -J joint2 0 -J joint3 0 -J joint4 0 -J joint5 0 -J joint6 0"/ -->
-
-   <!-- Overwriting these args -->
   <arg name="debug" default="false" />
   <arg name="gui" default="true" />
-  <arg name="pause" default="false" />  <!-- custom to start the simulation automatically or manually -->
+  <arg name="pause" default="false" />
 
   <!-- Load World file -->
-  <node name="world_file" pkg="xacro" type="xacro" args="--inorder -o $(find package_template)/worlds/no_gravity.world $(find package_template)/worlds/no_gravity.world.xacro" /> <!-- custom world -->
-  <arg name="world" default="$(find package_template)/worlds/no_gravity.world" />  <!-- custom world -->
+  <arg name="world" default="$(find package_template)/worlds/no_gravity.world" />
+  <node name="world_file" pkg="xacro" type="xacro" args="--inorder -o $(arg world) $(find package_template)/worlds/no_gravity.world.xacro" />
 
   <!-- Include gazebo_ros launcher -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-          <arg name="world_name" value="$(arg world)" />
-          <arg name="verbose" value="true" />
-          <arg name="debug" value="$(arg debug)" />
-          <arg name="gui" value="$(arg gui)" />
-          <arg name="paused" value="$(arg pause)" />
-          <arg name="use_sim_time" value="pause" />
-          <!-- <arg name="physics" value="dart"/> -->
+    <arg name="world_name" value="$(arg world)" />
+    <arg name="verbose" value="true" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg pause)" />
+    <arg name="use_sim_time" value="true" />
   </include>
 
+  <!-- Send URDF model to param server -->
+  <param name="robot_description" command="xacro '$(find package_template)/urdf/cubesat_template.xacro'" />
+  
+  <!--Replaced robot state publisher with: -->
+  <!-- base_link to camera_link -->
+   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_to_base"
+        args="0.1 0.05 0.15  0 0 0 base_link camera_link" output="screen"/>
 
-  <!-- Send URDF model to param server-->
-  <param name="robot_description" command="xacro  '$(find package_template)/urdf/cubesat_template.xacro'" />      <!-- custom model -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_to_base"
+        args="0.2 0.0 0.25  0 0 0 base_link lidar_link" output="screen"/>
 
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen" />
-
+  <!-- Spawn URDF Model -->
   <arg name="world_pose" value="-x 0 -y 0 -z 1" />
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -model robot -param robot_description $(arg world_pose)"/>
-  
-
-  <!-- Load ROS controllers -->
-
-  <!-- Load joint controller parameters for Gazebo -->
-          <!--rosparam command="load" file="$(find ets_vii)/config/gazebo_controllers.yaml" /-->
-  <!-- Spawn Gazebo ROS controllers -->
-          <!--node name="gazebo_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_state_controller" /--> 
-  <!-- Load joint controller configurations from YAML file to parameter server -->
-                <!--rosparam command="load" file="$(find ets_vii)/config/effort_controllers.yaml" /-->
-  <!-- Load the controllers -->
-          <!--node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-            output="screen" args="joint1_position_controller 
-                                  joint2_position_controller 
-                                  joint3_position_controller
-                                  joint4_position_controller
-                                  joint5_position_controller
-                                  joint6_position_controller" /> 
-
-          <node pkg="axis_by_axis" type="axis_by_axis_node" name="trajectory" /> 
-
-          <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen" />
-
-          <node pkg="rosbag" type="record" name="rosbag_record" args="record -o $(find ets_vii)/log/data /gazebo/link_states /gazebo/model_states /satt_arm_controller/state" / -->
+ 
+ <!--World to base link removed-->
 
   <!-- ROSBAG -->
-  <node pkg="rosbag" type="record" name="rosbag_record" args="record -o $(find package_template)/log/data /OrbitPosition /OrbitVelocity /OrbitAltitude /ModelPosition /ModelPositionLVLH /OrbitEccentricity /OrbitSemiMajorAxis /OrbitInclination /OrbitRAAN /OrbitArgumentOfPerigee /OrbitTrueAnomaly /OrbitPeriod"/>
-                <!-- custom, add the topics you need -->
+  <node pkg="rosbag" type="record" name="rosbag_record" args="record -o $(find package_template)/log/data /OrbitPosition /OrbitVelocity /OrbitAltitude /ModelPosition /ModelPositionLVLH /OrbitEccentricity /OrbitSemiMajorAxis /OrbitInclination /OrbitRAAN /OrbitArgumentOfPerigee /OrbitTrueAnomaly /OrbitPeriod /scan /camera_info"/>
 
+   <!-- Hector Mapping Launch -->
+  <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+    <param name="use_sim_time" value="true"/>
+    <param name="base_frame" value="base_link"/>
+    <param name="odom_frame" value="odom"/>
+    <param name="scan_topic" value="scan_3d"/>
+    <param name="map_frame" value="map"/>
+    <param name="tf_buffer_length" value="100.0"/>
+  </node>
 </launch>
